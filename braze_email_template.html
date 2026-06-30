@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{api_trigger_properties.${subject}}}</title>
+  <style>
+    body, table, td { margin: 0; padding: 0; }
+    body { background: #f4f4f4; font-family: Arial, Helvetica, sans-serif; -webkit-text-size-adjust: 100%; }
+    img { border: 0; display: block; }
+    a { color: #0077b6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .email-wrapper { background: #f4f4f4; width: 100%; }
+    .email-card { background: #ffffff; max-width: 650px; margin: 0 auto; }
+    /* View in browser */
+    .view-browser { text-align: right; padding: 8px 14px 4px; font-family: Arial, sans-serif; font-size: 11px; color: #707070; }
+    /* Red breaking news banner */
+    .banner { background: #c70000; line-height: 0; }
+    .banner img { width: 100%; max-width: 650px; }
+    /* Main content area */
+    .main { padding: 10px 14px 0; }
+    /* Date line */
+    .date-line { font-family: Arial, sans-serif; font-size: 12px; color: #707070; padding-bottom: 8px; }
+    /* Article section */
+    .article { border-top: 1px solid #bababa; padding-top: 10px; }
+    .headline { font-family: Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 400; color: #000000; line-height: 1.2; margin-bottom: 8px; }
+    .standfirst { font-family: Arial, sans-serif; font-size: 12px; color: #707070; line-height: 1.35; margin-bottom: 12px; }
+    /* Article image */
+    .article-image { width: 100%; display: block; }
+    /* Discover block */
+    .discover { background: #e6effe; padding: 11px 12px; margin-top: 2px; }
+    .discover-text { font-family: Arial, sans-serif; font-size: 12px; font-weight: 700; color: #121212; line-height: 1.2; display: inline; }
+    .discover-link { font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; color: #0077b6; white-space: nowrap; float: right; }
+    /* Footer */
+    .footer { margin: 14px 14px 16px; border-top: 2px solid #121212; padding-top: 12px; }
+    .footer-heading { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; font-weight: 700; color: #000000; margin-bottom: 6px; }
+    .footer-contact { font-family: Arial, sans-serif; font-size: 11px; color: #000000; line-height: 1.45; margin-bottom: 12px; }
+    .footer-links { font-family: Arial, sans-serif; font-size: 11px; color: #0077b6; line-height: 1.5; margin-bottom: 10px; }
+    .footer-legal { font-family: Arial, sans-serif; font-size: 10px; color: #999999; line-height: 1.45; }
+    @media only screen and (max-width: 480px) {
+      .headline { font-size: 16px !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+<div class="email-card">
+
+  <!-- Breaking News banner -->
+  <div class="banner">
+    <img src="https://i.guim.co.uk/img/uploads/2024/08/14/BreakingNewsAustralia_Red_2_email-header.png?quality=85&dpr=2&width=650&s=7569b6852eb30cf21d85609477981335" alt="Breaking News Australia" width="650">
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- Date -->
+    <div class="date-line">{{ 'now' | date: '%a %-d %B %Y' }}</div>
+
+    <!-- Article -->
+    <div class="article">
+      <div class="headline">
+        <a href="{{api_trigger_properties.${url}}}" style="color:#000000; text-decoration:none;">{{api_trigger_properties.${headline}}}</a>
+      </div>
+      <div class="standfirst">{{api_trigger_properties.${body}}}</div>
+    </div>
+
+    <!-- Article image (only shown if image_url is provided) -->
+    {% if api_trigger_properties.${image_url} != blank %}
+    <a href="{{api_trigger_properties.${url}}}">
+      <img class="article-image" src="{{api_trigger_properties.${image_url}}}" alt="{{api_trigger_properties.${headline}}}">
+    </a>
+    {% endif %}
+
+    <!-- Discover block -->
+    <div class="discover">
+      <a href="https://www.theguardian.com/australia-news" class="discover-link">View more →</a>
+      <span class="discover-text">Discover more stories from the Guardian</span>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-heading">Get in touch</div>
+    <div class="footer-contact">
+      If you have any questions or comments about any of our newsletters please email
+      <a href="mailto:newsletters@theguardian.com">newsletters@theguardian.com</a>
+    </div>
+    <div class="footer-links">
+      <a href="{{${set_user_to_unsubscribed_url}}}">Manage your newsletter</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="{{${unsubscribe_url}}}">Unsubscribe</a>
+    </div>
+    <div class="footer-legal">
+      You are receiving this email because you opted to receive messages from Guardian News &amp; Media Limited.
+      Registered Office: Kings Place, 90 York Way, London, N1 9GU.
+    </div>
+  </div>
+
+</div><!-- /email-card -->
+</div><!-- /email-wrapper -->
+</body>
+</html>

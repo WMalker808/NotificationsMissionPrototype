@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispatch — Newsletter Hub</title>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/guardian.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+    :root{
+      --navy:#052962;
+      --blue:#1556b0;
+      --doc-blue:#1c8ed6;
+      --orange:#c8531c;
+      --green:#007e3a;
+      --serif:'Source Serif 4',Georgia,serif;
+      --sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    }
+
+    body{
+      font-family:var(--sans);
+      color:#121212;
+      background:#f4f4f4;
+      height:100vh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .dsp-scroll::-webkit-scrollbar{width:9px;height:9px;}
+    .dsp-scroll::-webkit-scrollbar-thumb{background:#c4c4c4;border-radius:4px;}
+    .dsp-scroll::-webkit-scrollbar-track{background:transparent;}
+
+    @keyframes dspPulse{0%{box-shadow:0 0 0 0 rgba(199,0,0,.55);}70%{box-shadow:0 0 0 7px rgba(199,0,0,0);}100%{box-shadow:0 0 0 0 rgba(199,0,0,0);}}
+    @keyframes dspFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+    /* ── TOP STATUS BAR ── */
+    #topbar{height:58px;flex-shrink:0;background:#fff;border-bottom:1px solid #d3d3d3;display:flex;align-items:center;padding-right:18px;}
+    .logo-block{display:flex;align-items:stretch;height:58px;margin-right:18px;}
+    .logo-d{width:58px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:26px;}
+    .logo-doc{width:58px;background:var(--doc-blue);display:flex;align-items:center;justify-content:center;}
+    #status-pill{display:inline-flex;align-items:center;height:34px;padding:0 18px;border-radius:18px;font-size:13.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
+    #status-pill.notready{background:#fbe2d8;color:var(--orange);}
+    #status-pill.ready{background:#e6f3ec;color:var(--green);}
+    #status-pill.sent{background:var(--green);color:#fff;}
+    .saved-wrap{display:flex;align-items:center;gap:8px;margin-left:26px;}
+    .saved-wrap span{font-size:13px;font-weight:700;color:var(--green);letter-spacing:.3px;}
+    .saved-wrap span b{font-weight:500;color:#5a7a64;}
+    .topbar-spacer{flex:1;}
+    .desk{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#333;}
+    .desk .dot{width:9px;height:9px;border-radius:50%;background:var(--guardian-news-red);animation:dspPulse 1.6s infinite;display:inline-block;}
+    .avatar{width:34px;height:34px;border-radius:50%;border:1.5px solid #999;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#333;margin-left:18px;}
+
+    /* ── TAB STRIP ── */
+    #tabstrip{height:50px;flex-shrink:0;background:#e4e4e4;border-bottom:1px solid #d3d3d3;display:flex;align-items:stretch;}
+    .tab{display:inline-flex;align-items:center;gap:9px;padding:0 22px;height:100%;background:transparent;border:none;border-top:3px solid transparent;border-right:1px solid #d3d3d3;cursor:pointer;font-size:14px;font-weight:500;color:#555;font-family:inherit;}
+    .tab.active{background:#f4f4f4;border-top-color:var(--navy);font-weight:700;color:#121212;}
+    .tab svg{display:block;}
+    .tab-spacer{flex:1;}
+    .close-btn{display:inline-flex;align-items:center;gap:9px;padding:0 22px;background:transparent;border:none;border-left:1px solid #d3d3d3;cursor:pointer;font-size:14px;font-weight:600;color:#333;font-family:inherit;}
+
+    /* ── BODY ── */
+    #body{flex:1;display:flex;overflow:hidden;}
+    #form-panel{flex:1;overflow-y:auto;position:relative;background:#f4f4f4;}
+    .form-inner{max-width:760px;padding:6px 0 80px;}
+
+    .section{padding:24px 40px 22px;border-bottom:1px solid #dadada;}
+    .section:last-child{border-bottom:none;padding-bottom:30px;}
+    .section-label{font-size:16px;font-weight:700;color:#121212;margin-bottom:14px;}
+    .label-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+    .label-row .section-label{margin-bottom:0;}
+
+    .input{width:100%;padding:13px 16px;border:1px solid #c9c9c9;border-radius:2px;background:#fff;font-size:15px;color:#121212;font-family:inherit;transition:border-color .15s,box-shadow .15s;}
+    .input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,86,176,.14);}
+    textarea.input{resize:none;}
+    .input-serif{font-family:var(--serif);}
+    #subject{font-size:23px;line-height:1.3;padding:16px 18px;}
+    #body-text{font-size:19px;line-height:1.45;padding:16px 18px;color:#222;}
+
+    .char-count{text-align:right;font-size:12px;margin-top:5px;color:#999;font-weight:500;}
+    .char-count.warn{color:#d98a00;}
+    .char-count.over{color:var(--navy);}
+
+    /* link tree */
+    #link-tree{display:none;margin-top:2px;}
+    #link-tree.show{display:flex;animation:dspFade .25s ease;}
+    .tree-rail{width:30px;flex-shrink:0;position:relative;}
+    .tree-rail::before{content:'';position:absolute;left:14px;top:0;bottom:26px;width:1px;background:#bcbcbc;}
+    .tree-rail::after{content:'';position:absolute;left:14px;top:calc(50% + 4px);width:14px;height:1px;background:#bcbcbc;}
+    .tree-box{flex:1;border:1px solid #d8d8d8;border-radius:2px;overflow:hidden;margin-top:8px;}
+    .tree-row{display:flex;align-items:center;background:#fbfbfb;}
+    .tree-row:first-child{border-bottom:1px solid #ececec;}
+    .tree-icon{width:46px;height:46px;background:#efefef;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-right:1px solid #e4e4e4;}
+    .tree-key{width:96px;flex-shrink:0;font-size:13px;font-weight:700;color:#333;padding:0 12px;}
+    .tree-val{flex:1;font-size:14px;color:#707070;padding:0 12px;font-family:var(--serif);}
+    .tree-val.url{font-size:13px;color:var(--blue);font-family:'SF Mono',Menlo,monospace;word-break:break-all;}
+
+    /* helper bar */
+    .helper-bar{display:flex;align-items:center;gap:14px;margin-top:14px;background:#dcdcdc;border-radius:2px;padding:9px 12px;}
+    .helper-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#333;}
+    .helper-status{font-size:13px;color:#5a5a5a;flex:1;}
+    .helper-status.ok{color:var(--green);}
+    .helper-status.warn{color:#a86b00;}
+    .fetch-btn{display:inline-flex;align-items:center;gap:8px;background:#333;color:#fff;border:none;border-radius:2px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .fetch-btn:hover{background:#1a1a1a;}
+
+    .copy-btn{background:#d6d6d6;color:#3a3a3a;border:none;border-radius:2px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+    .copy-btn:hover{background:#cccccc;}
+
+    .dev-badge{font-size:10.5px;font-weight:700;letter-spacing:.4px;background:#fde7c8;color:#8a5a00;border:1px solid #f3d690;padding:2px 8px;border-radius:2px;text-transform:uppercase;}
+
+    /* segments */
+    .seg-group{display:flex;flex-wrap:wrap;gap:9px;}
+    .seg-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:2px;border:1px solid #c9c9c9;background:#fff;color:#333;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s;}
+    .seg-btn:hover{border-color:var(--navy);}
+    .seg-btn.selected{border-color:var(--navy);background:var(--navy);color:#fff;font-weight:600;}
+    .seg-code{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:2px;background:#ececec;color:#707070;}
+    .seg-btn.selected .seg-code{background:rgba(255,255,255,.2);color:#fff;}
+    .seg-warn{display:flex;gap:10px;margin-top:14px;padding:11px 14px;background:#fdf3d6;border:1px solid #f3d690;border-left:3px solid #e0a200;border-radius:2px;font-size:12.5px;color:#7a5400;line-height:1.55;}
+    .seg-warn svg{flex-shrink:0;margin-top:1px;}
+
+    /* timing */
+    .timing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+    .timing-btn{padding:14px 15px;border-radius:2px;text-align:left;cursor:pointer;font-family:inherit;border:1px solid #c9c9c9;border-top:3px solid #cfcfcf;background:#fff;}
+    .timing-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .timing-label{font-size:13.5px;font-weight:700;color:#333;}
+    .timing-desc{font-size:12px;color:#707070;line-height:1.4;}
+    .timing-btn.sel-immediate{border-color:var(--navy);border-top-color:var(--navy);background:#eef2fb;}
+    .timing-btn.sel-immediate .timing-label{color:var(--navy);}
+    .timing-btn.sel-scheduled{border-color:var(--orange);border-top-color:var(--orange);background:#fff5ee;}
+    .timing-btn.sel-scheduled .timing-label{color:var(--orange);}
+    .timing-btn.sel-intelligent{border-color:var(--blue);border-top-color:var(--blue);background:#eef4fc;}
+    .timing-btn.sel-intelligent .timing-label{color:var(--blue);}
+
+    #scheduled-panel{display:none;gap:14px;margin-top:14px;padding:14px 16px;background:#fff5ee;border:1px solid #f4cdb0;border-radius:2px;}
+    #scheduled-panel.show{display:flex;animation:dspFade .2s ease;}
+    #scheduled-panel > div{flex:1;}
+    .sched-label{font-size:12px;font-weight:700;color:#a8521f;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
+    #scheduled-panel .input{border-color:#e0b48f;padding:10px 12px;font-size:14px;}
+
+    #intelligent-panel{display:none;gap:13px;margin-top:14px;padding:15px 17px;background:#eef4fc;border:1px solid #c3d7f2;border-radius:2px;}
+    #intelligent-panel.show{display:flex;animation:dspFade .2s ease;}
+    #intelligent-panel svg{flex-shrink:0;margin-top:1px;}
+    .it-title{font-size:13.5px;font-weight:700;color:#11407e;margin-bottom:5px;}
+    .it-body{font-size:12.5px;color:#555;line-height:1.6;}
+    .it-tags{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;}
+    .it-tag{background:#fff;border:1px solid #c3d7f2;border-radius:2px;padding:5px 10px;font-size:11.5px;color:#11407e;font-weight:600;}
+
+    /* ── RIGHT RAIL ── */
+    #rail{width:344px;flex-shrink:0;background:#fff;border-left:1px solid #d3d3d3;overflow-y:auto;display:flex;flex-direction:column;padding:20px 18px;}
+    .rail-label{font-size:10.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.8px;margin-bottom:11px;}
+
+    #success-banner{display:none;gap:11px;align-items:flex-start;background:#e6f3ec;border:1px solid #a9d9bf;border-radius:2px;padding:12px 14px;margin-bottom:18px;}
+    #success-banner.show{display:flex;animation:dspFade .25s ease;}
+    .success-title{font-size:13px;font-weight:700;color:#065f46;}
+    .success-dismiss{margin-left:auto;background:none;border:none;color:#047857;cursor:pointer;font-size:17px;line-height:1;}
+
+    .email-preview{border:1px solid #dadada;border-radius:3px;overflow:hidden;margin-bottom:20px;background:#fff;}
+    .em-viewbrowser{text-align:right;padding:8px 12px 4px;font-family:Arial,sans-serif;font-size:11px;color:#707070;}
+    .em-banner{background:#c70000;line-height:0;}
+    .em-banner img{display:block;width:100%;}
+    .em-main{padding:10px 14px 0;}
+    .em-date{font-family:Arial,sans-serif;font-size:12px;color:#707070;padding-bottom:8px;}
+    .em-article{border-top:1px solid #bababa;padding-top:10px;}
+    .em-headline{font-family:Georgia,serif;font-size:19px;font-weight:400;color:#000;line-height:1.2;margin-bottom:8px;}
+    .em-standfirst{font-family:Arial,sans-serif;font-size:12px;color:#707070;line-height:1.35;margin-bottom:12px;}
+    .em-image{width:100%;display:block;}
+    .em-image-ph{width:100%;height:118px;background:#ececec;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11px;font-family:Arial,sans-serif;}
+    .em-discover{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#e6effe;padding:11px 12px;margin-top:2px;}
+    .em-discover .em-disc-text{font-family:Arial,sans-serif;font-size:12px;font-weight:700;color:#121212;line-height:1.2;}
+    .em-more{font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#0077b6;white-space:nowrap;}
+    .em-footer{margin:14px 14px 16px;border-top:2px solid #121212;padding-top:12px;}
+    .em-getintouch{font-family:Georgia,serif;font-size:15px;font-weight:700;color:#000;margin-bottom:6px;}
+    .em-contact{font-family:Arial,sans-serif;font-size:11px;color:#000;line-height:1.45;margin-bottom:12px;}
+    .em-contact a{color:#0077b6;text-decoration:none;}
+    .em-links{font-family:Arial,sans-serif;font-size:11px;color:#0077b6;line-height:1.5;margin-bottom:10px;}
+    .em-legal{font-family:Arial,sans-serif;font-size:10px;color:#999;line-height:1.45;}
+
+    .route-row{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f6f6f6;border:1px solid #e2e2e2;border-radius:2px;margin-bottom:18px;}
+    .route-channel{font-size:12.5px;font-weight:600;color:#333;}
+    .route-detail{font-size:11px;color:#888;margin-top:1px;}
+    .route-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:2px;background:#e6eefb;color:var(--blue);flex-shrink:0;}
+
+    .seg-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+    .seg-pill{font-size:11px;background:var(--navy);color:#fff;padding:3px 9px;border-radius:2px;font-weight:600;}
+    .seg-pill-empty{font-size:11px;color:#aaa;font-style:italic;}
+
+    .rail-spacer{flex:1;}
+    #send-btn{width:100%;padding:14px;border:none;border-radius:2px;font-size:14px;font-weight:700;font-family:inherit;letter-spacing:.2px;transition:all .15s;}
+    #send-btn.disabled{background:#dcdcdc;color:#aaa;cursor:default;}
+    #send-btn.ready{background:var(--navy);color:#fff;cursor:pointer;}
+    #send-btn.ready:hover{background:var(--blue);}
+    #send-btn.sent{background:var(--green);color:#fff;cursor:default;}
+    #send-hint{font-size:11px;color:#999;text-align:center;margin-top:7px;min-height:14px;}
+
+    @media (max-width:900px){ #rail{display:none;}}
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ TOP STATUS BAR ═══════════ -->
+  <div id="topbar">
+    <div class="logo-block">
+      <div class="logo-d">D</div>
+      <div class="logo-doc">
+        <svg width="22" height="24" viewBox="0 0 22 24" fill="none"><rect x="3" y="2" width="16" height="20" rx="2" fill="#fff"/><rect x="6" y="6" width="10" height="2" rx="1" fill="#1c8ed6"/><rect x="6" y="10" width="10" height="2" rx="1" fill="#1c8ed6"/><rect x="6" y="14" width="7" height="2" rx="1" fill="#1c8ed6"/></svg>
+      </div>
+    </div>
+    <div id="status-pill" class="notready">Not ready</div>
+    <div class="saved-wrap">
+      <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#007e3a"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>SAVED <b id="saved-time">—</b></span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="desk"><span class="dot"></span>Breaking desk</div>
+    <div class="avatar">MW</div>
+  </div>
+
+  <!-- ═══════════ TAB STRIP ═══════════ -->
+  <div id="tabstrip">
+    <button class="tab active" data-tab="content" onclick="scrollToSection('content')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Content
+    </button>
+    <button class="tab" data-tab="audience" onclick="scrollToSection('audience')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19a5.5 5.5 0 0111 0M16 6a3 3 0 010 6M16.5 19a5.5 5.5 0 00-2-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Audience
+    </button>
+    <button class="tab" data-tab="delivery" onclick="scrollToSection('delivery')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Delivery
+    </button>
+    <div class="tab-spacer"></div>
+    <button class="close-btn">
+      <svg width="15" height="15" viewBox="0 0 15 15"><path d="M3 3l9 9M12 3l-9 9" stroke="#333" stroke-width="2" stroke-linecap="round"/></svg>
+      Close
+    </button>
+  </div>
+
+  <!-- ═══════════ BODY ═══════════ -->
+  <div id="body">
+
+    <!-- ── FORM PANEL ── -->
+    <div id="form-panel" class="dsp-scroll">
+      <div class="form-inner">
+
+        <!-- Article source -->
+        <div class="section" id="sec-content">
+          <div class="section-label">Article source</div>
+          <input type="url" id="url" class="input" placeholder="https://www.theguardian.com/…" oninput="onUrlInput()">
+
+          <div id="link-tree">
+            <div class="tree-rail"></div>
+            <div class="tree-box">
+              <div class="tree-row">
+                <div class="tree-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5l5-5M8 12l-2.3 2.3a3.2 3.2 0 004.5 4.5L12.5 16M16 12l2.3-2.3a3.2 3.2 0 00-4.5-4.5L11.5 8" stroke="#707070" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                <div class="tree-key">Link Text</div>
+                <div class="tree-val" id="tree-linktext"></div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5l5-5M8 12l-2.3 2.3a3.2 3.2 0 004.5 4.5L12.5 16M16 12l2.3-2.3a3.2 3.2 0 00-4.5-4.5L11.5 8" stroke="#707070" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+                <div class="tree-key">URL</div>
+                <div class="tree-val url" id="tree-url"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="helper-bar">
+            <div class="helper-title">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-2.6-6.3M21 4v4h-4" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Article import
+            </div>
+            <div class="helper-status" id="fetch-status">Paste a Guardian URL, then fetch</div>
+            <button class="fetch-btn" onclick="fetchArticle()">
+              Fetch <svg width="15" height="11" viewBox="0 0 15 11"><path d="M0 5.5h12M9 1.5l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject line -->
+        <div class="section">
+          <div class="section-label">Subject line</div>
+          <textarea id="subject" class="input input-serif" rows="2" maxlength="100" placeholder="Enter the breaking-news subject line…" oninput="updateCharCount('subject','hlen',100);updatePreview();updateSendButton();touchSaved();"></textarea>
+          <div class="char-count" id="hlen">0 / 100</div>
+        </div>
+
+        <!-- Preview text -->
+        <div class="section">
+          <div class="label-row">
+            <div class="section-label">Preview text</div>
+            <button class="copy-btn" onclick="copyFromSubject()">Copy from subject</button>
+          </div>
+          <textarea id="body-text" class="input input-serif" rows="3" maxlength="280" placeholder="Appears as the email preview text and opening body copy…" oninput="updateCharCount('body-text','blen',280);updatePreview();touchSaved();"></textarea>
+          <div class="char-count" id="blen">0 / 280</div>
+        </div>
+
+        <!-- Audience -->
+        <div class="section" id="sec-audience">
+          <div class="label-row">
+            <div class="section-label">Audience segments</div>
+            <span class="dev-badge">Not in production</span>
+          </div>
+          <div class="seg-group" id="seg-group"></div>
+          <div class="seg-warn">
+            <svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 3l9 16H3z" fill="none" stroke="#c8920f" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5M12 16.6v.4" stroke="#c8920f" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div><strong>Targeting not yet active.</strong> Segment selection is captured but not wired to delivery — every dispatch goes to the same Braze campaign regardless of which segments are chosen.</div>
+          </div>
+        </div>
+
+        <!-- Delivery & timing -->
+        <div class="section" id="sec-delivery">
+          <div class="section-label">Delivery &amp; timing</div>
+          <div class="timing-grid">
+            <button class="timing-btn sel-immediate" id="timing-immediate" onclick="selectTiming('immediate')">
+              <div class="timing-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                <span class="timing-label">Immediate</span>
+              </div>
+              <div class="timing-desc">Send right now via Braze</div>
+            </button>
+            <button class="timing-btn" id="timing-scheduled" onclick="selectTiming('scheduled')">
+              <div class="timing-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 9v4l2.5 1.6M9 3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <span class="timing-label">Scheduled</span>
+              </div>
+              <div class="timing-desc">Pick a date and time</div>
+            </button>
+            <button class="timing-btn" id="timing-intelligent" onclick="selectTiming('intelligent')">
+              <div class="timing-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 00-3 11.2V17h6v-2.8A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <span class="timing-label">Intelligent</span>
+              </div>
+              <div class="timing-desc">Braze sends per-subscriber</div>
+            </button>
+          </div>
+
+          <div id="scheduled-panel">
+            <div>
+              <div class="sched-label">Date</div>
+              <input type="date" id="sched-date" class="input" oninput="updateSendButton()">
+            </div>
+            <div>
+              <div class="sched-label">Time (local)</div>
+              <input type="time" id="sched-time" class="input" oninput="updateSendButton()">
+            </div>
+          </div>
+
+          <div id="intelligent-panel">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 00-3 11.2V17h6v-2.8A6 6 0 0012 3z" stroke="#1556b0" stroke-width="1.7"/><path d="M9.5 20h5M10 22h4" stroke="#1556b0" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <div>
+              <div class="it-title">Braze Intelligent Timing</div>
+              <div class="it-body">Braze analyses each subscriber's historical engagement — open times, click-through, session activity — and delivers this dispatch in their individual optimal window rather than at a single fixed time.</div>
+              <div class="it-tags">
+                <span class="it-tag">Delivered within 24 hrs</span>
+                <span class="it-tag">~+23% open-rate uplift</span>
+                <span class="it-tag">Per-subscriber send time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── RIGHT RAIL ── -->
+    <div id="rail" class="dsp-scroll">
+
+      <div id="success-banner">
+        <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#007e3a"/><path d="M6 10.2l2.6 2.6L14 7.4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="success-title" id="success-title">Breaking-news dispatch sent</div>
+        <button class="success-dismiss" onclick="dismissSuccess()">×</button>
+      </div>
+
+      <div class="rail-label">Email preview</div>
+      <div class="email-preview">
+        <div class="em-viewbrowser">View in browser</div>
+        <div class="em-banner"><img src="https://i.guim.co.uk/img/uploads/2024/08/14/BreakingNewsAustralia_Red_2_email-header.png?quality=85&dpr=2&width=650&s=7569b6852eb30cf21d85609477981335" alt="Breaking News Australia"></div>
+        <div class="em-main">
+          <div class="em-date" id="em-date">Mon 22 June 2026</div>
+          <div class="em-article">
+            <div class="em-headline" id="prev-headline">Your subject line will appear here</div>
+            <div class="em-standfirst" id="prev-body">Your preview text appears here as the email standfirst.</div>
+          </div>
+          <img class="em-image" id="em-image" alt="" style="display:none;">
+          <div class="em-image-ph" id="em-image-ph">Article image</div>
+          <div class="em-discover">
+            <span class="em-disc-text">Discover more stories from the Guardian</span>
+            <span class="em-more">View more →</span>
+          </div>
+        </div>
+        <div class="em-footer">
+          <div class="em-getintouch">Get in touch</div>
+          <div class="em-contact">If you have any questions or comments about any of our newsletters please email <a href="/cdn-cgi/l/email-protection#c7a6b2b4b3b5a6abaea6e9a9a2b0b4aba2b3b3a2b5b487b3afa2a0b2a6b5a3aea6a9e9a4a8aa"><span class="__cf_email__" data-cfemail="8eeffbfdfafcefe2e7efa0e0ebf9fde2ebfafaebfcfdcefae6ebe9fbeffceae7efe0a0ede1e3">[email&#160;protected]</span></a></div>
+          <div class="em-links">Manage your newsletter&nbsp;&nbsp;|&nbsp;&nbsp;Unsubscribe&nbsp;&nbsp;|&nbsp;&nbsp;View in browser</div>
+          <div class="em-legal">You are receiving this email because you opted to receive messages from Guardian News &amp; Media Limited. Registered Office: Kings Place, 90 York Way, London, N1 9GU.</div>
+        </div>
+      </div>
+
+      <div class="rail-label">Routing</div>
+      <div class="route-row">
+        <div>
+          <div class="route-channel">Newsletter · Email</div>
+          <div class="route-detail" id="routing-detail">Immediate send via Braze</div>
+        </div>
+        <span class="route-badge">Braze</span>
+      </div>
+
+      <div class="rail-label">Sending to</div>
+      <div class="seg-pills" id="seg-pills"><span class="seg-pill-empty">No segments selected</span></div>
+
+      <div class="rail-spacer"></div>
+
+      <button id="send-btn" class="disabled" onclick="sendNewsletter()">Send dispatch</button>
+      <div id="send-hint">Add a subject line to continue</div>
+    </div>
+
+  </div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+  const SEGMENTS = [
+    { id:'uk', label:'United Kingdom', code:'UK' },
+    { id:'us', label:'United States',  code:'US' },
+    { id:'au', label:'Australia',      code:'AU' },
+    { id:'eu', label:'Europe',         code:'EU' },
+    { id:'global', label:'Global',     code:'ALL' },
+  ];
+
+  const state = {
+    segments:{},
+    timing:'immediate',
+    imageUrl:'',
+    sent:false,
+  };
+
+  const TIMING_DETAIL = {
+    immediate:'Immediate send via Braze',
+    scheduled:'Scheduled send via Braze',
+    intelligent:'Intelligent Timing · per-subscriber window',
+  };
+
+  // ── INIT ──
+  function init(){
+    const g = document.getElementById('seg-group');
+    SEGMENTS.forEach(seg=>{
+      const b = document.createElement('button');
+      b.className = 'seg-btn';
+      b.id = 'seg-'+seg.id;
+      b.innerHTML = '<span class="seg-code">'+seg.code+'</span><span>'+seg.label+'</span>';
+      b.onclick = ()=>toggleSegment(seg.id);
+      g.appendChild(b);
+    });
+    document.getElementById('em-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    updateEmailImage();
+    touchSaved();
+    updateSendButton();
+  }
+
+  function touchSaved(){
+    document.getElementById('saved-time').textContent = new Date().toTimeString().slice(0,8);
+    if(state.sent){ state.sent=false; }
+  }
+
+  function scrollToSection(tab){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+    const map = { content:'sec-content', audience:'sec-audience', delivery:'sec-delivery' };
+    const el = document.getElementById(map[tab]);
+    const panel = document.getElementById('form-panel');
+    if(el && panel) panel.scrollTo({ top: el.offsetTop - 10, behavior:'smooth' });
+  }
+
+  // ── URL / FETCH ──
+  let _fetchTimer = null;
+  function onUrlInput(){
+    clearTimeout(_fetchTimer);
+    const url = document.getElementById('url').value.trim();
+    const status = document.getElementById('fetch-status');
+    status.className = 'helper-status';
+    if(!url){ status.textContent = 'Paste a Guardian URL, then fetch'; return; }
+    status.textContent = 'Press Fetch to import…';
+    _fetchTimer = setTimeout(fetchArticle, 600);
+  }
+
+  function fetchArticle(){
+    const url = document.getElementById('url').value.trim();
+    const status = document.getElementById('fetch-status');
+    if(!url){ status.textContent = 'Enter a Guardian URL first'; status.className='helper-status warn'; return; }
+    status.textContent = 'Fetching article…';
+    status.className = 'helper-status';
+
+    fetch('/api/fetch-article', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-CSRF-Token':CSRF },
+      body: JSON.stringify({ url }),
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.error) throw new Error(data.error);
+      if(data.headline){
+        document.getElementById('subject').value = data.headline;
+        updateCharCount('subject','hlen',100);
+      }
+      if(data.body){
+        document.getElementById('body-text').value = data.body;
+        updateCharCount('body-text','blen',280);
+      }
+      state.imageUrl = data.image_url || '';
+      updateEmailImage();
+      showLinkTree(data.headline || '', url);
+      updatePreview();
+      updateSendButton();
+      status.textContent = '✓ Subject and preview text populated from article';
+      status.className = 'helper-status ok';
+    })
+    .catch(()=>{
+      status.textContent = 'Could not fetch — enter the subject line manually';
+      status.className = 'helper-status warn';
+    });
+  }
+
+  function showLinkTree(linkText, url){
+    let slug = url;
+    try { slug = new URL(url).pathname.replace(/^\//,''); } catch(_) {}
+    document.getElementById('tree-linktext').textContent = linkText || slug;
+    document.getElementById('tree-url').textContent = slug;
+    document.getElementById('link-tree').classList.add('show');
+  }
+
+  // ── SEGMENTS ──
+  function toggleSegment(id){
+    state.segments[id] = !state.segments[id];
+    document.getElementById('seg-'+id).classList.toggle('selected', state.segments[id]);
+    updateSegmentPills();
+    touchSaved();
+  }
+  function updateSegmentPills(){
+    const sel = SEGMENTS.filter(s=>state.segments[s.id]);
+    const c = document.getElementById('seg-pills');
+    c.innerHTML = sel.length === 0
+      ? '<span class="seg-pill-empty">No segments selected</span>'
+      : sel.map(s=>'<span class="seg-pill">'+s.label+'</span>').join('');
+  }
+
+  // ── TIMING ──
+  function selectTiming(t){
+    state.timing = t;
+    ['immediate','scheduled','intelligent'].forEach(id=>{
+      document.getElementById('timing-'+id).className = 'timing-btn' + (id===t ? ' sel-'+id : '');
+    });
+    document.getElementById('scheduled-panel').classList.toggle('show', t==='scheduled');
+    document.getElementById('intelligent-panel').classList.toggle('show', t==='intelligent');
+    document.getElementById('routing-detail').textContent = TIMING_DETAIL[t];
+    updateSendButton();
+    touchSaved();
+  }
+
+  // ── PREVIEW ──
+  function copyFromSubject(){
+    document.getElementById('body-text').value = document.getElementById('subject').value;
+    updateCharCount('body-text','blen',280);
+    updatePreview();
+    touchSaved();
+  }
+  function updatePreview(){
+    const hl = document.getElementById('subject').value;
+    const body = document.getElementById('body-text').value;
+    document.getElementById('prev-headline').textContent = hl || 'Your subject line will appear here';
+    document.getElementById('prev-body').textContent = body || 'Your preview text appears here as the email standfirst.';
+  }
+
+  function updateEmailImage(){
+    const img = document.getElementById('em-image');
+    const ph = document.getElementById('em-image-ph');
+    if(state.imageUrl){ img.src = state.imageUrl; img.style.display='block'; ph.style.display='none'; }
+    else { img.style.display='none'; ph.style.display='flex'; }
+  }
+
+  // ── CHAR COUNT ──
+  function updateCharCount(inputId, countId, max){
+    const val = document.getElementById(inputId).value.length;
+    const el = document.getElementById(countId);
+    el.textContent = val + ' / ' + max;
+    el.className = 'char-count' + (val > max*0.9 ? (val >= max ? ' over' : ' warn') : '');
+  }
+
+  // ── STATUS / SEND BUTTON ──
+  function updateSendButton(){
+    const btn = document.getElementById('send-btn');
+    const hint = document.getElementById('send-hint');
+    const pill = document.getElementById('status-pill');
+    const hl = document.getElementById('subject').value.trim();
+    const schedOk = state.timing !== 'scheduled' || (
+      document.getElementById('sched-date').value && document.getElementById('sched-time').value
+    );
+    const ready = hl.length > 0 && schedOk;
+
+    if(state.sent){
+      btn.className='sent'; btn.disabled=true; btn.textContent='✓ Dispatched';
+      pill.className='sent'; pill.textContent='Dispatched';
+      hint.textContent=''; return;
+    }
+
+    btn.className = ready ? 'ready' : 'disabled';
+    btn.disabled = !ready;
+    pill.className = ready ? 'ready' : 'notready';
+    pill.textContent = ready ? 'Ready to send' : 'Not ready';
+
+    if(ready){
+      btn.textContent = state.timing==='scheduled' ? 'Schedule dispatch'
+        : state.timing==='intelligent' ? 'Send via Intelligent Timing'
+        : 'Send dispatch';
+      hint.textContent = '';
+    } else {
+      btn.textContent = 'Send dispatch';
+      hint.textContent = !hl ? 'Add a subject line to continue' : 'Set a date and time';
+    }
+  }
+
+  // ── SEND ──
+  function sendNewsletter(){
+    const btn = document.getElementById('send-btn');
+    if(btn.classList.contains('disabled') || btn.classList.contains('sent')) return;
+
+    const hl = document.getElementById('subject').value.trim();
+    const body = document.getElementById('body-text').value.trim();
+    const url = document.getElementById('url').value.trim();
+    const schedDate = document.getElementById('sched-date').value;
+    const schedTime = document.getElementById('sched-time').value;
+    const segments = SEGMENTS.filter(s=>state.segments[s.id]).map(s=>s.label);
+
+    let schedAt = null;
+    if(state.timing==='scheduled' && schedDate && schedTime){
+      schedAt = new Date(schedDate+'T'+schedTime).toISOString().slice(0,19);
+    }
+
+    fetch('/api/send', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-CSRF-Token':CSRF },
+      body: JSON.stringify({
+        headline:hl, body, url, image_url:state.imageUrl, segments,
+        timing:state.timing, sched_at:schedAt,
+      })
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      if(!data.success){ alert('Send failed: '+(data.error||'Unknown error')); updateSendButton(); return; }
+      state.sent = true;
+      updateSendButton();
+      const titles = {
+        immediate:'Breaking-news dispatch sent',
+        scheduled:'Dispatch scheduled for '+schedDate+' '+schedTime+' (local)',
+        intelligent:'Dispatch queued for intelligent delivery',
+      };
+      document.getElementById('success-title').textContent = titles[state.timing] || titles.immediate;
+      document.getElementById('success-banner').classList.add('show');
+      setTimeout(()=>{ state.sent=false; updateSendButton(); }, 3000);
+    })
+    .catch(()=>{ alert('Send failed: network error'); updateSendButton(); });
+  }
+
+  function dismissSuccess(){
+    document.getElementById('success-banner').classList.remove('show');
+  }
+
+  init();
+</script>
+</body>
+</html>
