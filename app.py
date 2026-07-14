@@ -22,7 +22,7 @@ def _require_csrf():
     return None
 
 
-def _braze_send(headline, body, url, image_url=None):
+def _braze_send(headline, body, url, image_url=None, kicker="Breaking News"):
     api_key = os.environ.get("BRAZE_API_KEY", "")
     endpoint = os.environ.get("BRAZE_REST_ENDPOINT", "https://rest.fra-01.braze.eu")
     campaign_id = os.environ.get("BRAZE_CAMPAIGN_ID", "")
@@ -37,7 +37,8 @@ def _braze_send(headline, body, url, image_url=None):
         "broadcast": True,
         "trigger_properties": {
             "headline": headline,
-            "subject": f"Breaking news: {headline}",
+            "kicker": kicker,
+            "subject": f"{kicker}: {headline}",
             "body": body,
             "url": url,
             "image_url": image_url or "",
@@ -56,7 +57,7 @@ def _braze_send(headline, body, url, image_url=None):
     return resp.json()
 
 
-def _braze_test_send(headline, body, url, recipient_email, image_url=None):
+def _braze_test_send(headline, body, url, recipient_email, image_url=None, kicker="Breaking News"):
     api_key = os.environ.get("BRAZE_API_KEY", "")
     endpoint = os.environ.get("BRAZE_REST_ENDPOINT", "https://rest.fra-01.braze.eu")
     campaign_id = os.environ.get("BRAZE_CAMPAIGN_ID", "")
@@ -75,7 +76,8 @@ def _braze_test_send(headline, body, url, recipient_email, image_url=None):
         }],
         "trigger_properties": {
             "headline": headline,
-            "subject": f"[TEST] Breaking news: {headline}",
+            "kicker": kicker,
+            "subject": f"[TEST] {kicker}: {headline}",
             "body": body,
             "url": url,
             "image_url": image_url or "",
@@ -94,7 +96,7 @@ def _braze_test_send(headline, body, url, recipient_email, image_url=None):
     return resp.json()
 
 
-def _braze_schedule(headline, body, url, schedule_time, image_url=None):
+def _braze_schedule(headline, body, url, schedule_time, image_url=None, kicker="Breaking News"):
     api_key = os.environ.get("BRAZE_API_KEY", "")
     endpoint = os.environ.get("BRAZE_REST_ENDPOINT", "https://rest.fra-01.braze.eu")
     campaign_id = os.environ.get("BRAZE_CAMPAIGN_ID", "")
@@ -109,7 +111,8 @@ def _braze_schedule(headline, body, url, schedule_time, image_url=None):
         "broadcast": True,
         "trigger_properties": {
             "headline": headline,
-            "subject": f"Breaking news: {headline}",
+            "kicker": kicker,
+            "subject": f"{kicker}: {headline}",
             "body": body,
             "url": url,
             "image_url": image_url or "",
@@ -221,6 +224,7 @@ def test_send():
     body = data.get("body", "")
     url = data.get("url", "")
     image_url = data.get("image_url", "")
+    kicker = data.get("kicker") or "Breaking News"
     recipient = (data.get("recipient") or "").strip()
     channels = data.get("channels") or []
 
@@ -238,7 +242,7 @@ def test_send():
             results["email"] = "simulated"
         else:
             try:
-                _braze_test_send(headline, body, url, recipient, image_url=image_url)
+                _braze_test_send(headline, body, url, recipient, image_url=image_url, kicker=kicker)
                 results["email"] = "sent"
             except Exception as exc:
                 return jsonify({"success": False, "error": str(exc)}), 500
@@ -261,6 +265,7 @@ def send_alert():
     body = data.get("body", "")
     url = data.get("url", "")
     image_url = data.get("image_url", "")
+    kicker = data.get("kicker") or "Breaking News"
     timing = data.get("timing", "immediate")
     sched_at = data.get("sched_at")  # bare UTC ISO-8601, e.g. "2026-05-15T13:30:00"
 
@@ -269,11 +274,11 @@ def send_alert():
 
     try:
         if timing == "immediate":
-            _braze_send(headline, body, url, image_url)
+            _braze_send(headline, body, url, image_url, kicker=kicker)
         elif timing == "scheduled":
             if not sched_at:
                 return jsonify({"success": False, "error": "Schedule time is required"}), 400
-            _braze_schedule(headline, body, url, sched_at, image_url=image_url)
+            _braze_schedule(headline, body, url, sched_at, image_url=image_url, kicker=kicker)
         else:
             return jsonify({"success": False, "error": "Unknown timing mode"}), 400
     except Exception as exc:
