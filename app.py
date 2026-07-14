@@ -2,7 +2,6 @@ from flask import Flask, render_template, jsonify, request, session
 from html.parser import HTMLParser
 from html import unescape
 from urllib.parse import urlparse
-from datetime import datetime, timezone
 from dotenv import load_dotenv
 import requests as http
 import secrets
@@ -57,7 +56,7 @@ def _braze_send(headline, body, url, image_url=None):
     return resp.json()
 
 
-def _braze_schedule(headline, body, url, schedule_time, at_optimal_time=False, image_url=None):
+def _braze_test_send(headline, body, url, recipient_email, image_url=None):
     api_key = os.environ.get("BRAZE_API_KEY", "")
     endpoint = os.environ.get("BRAZE_REST_ENDPOINT", "https://rest.fra-01.braze.eu")
     campaign_id = os.environ.get("BRAZE_CAMPAIGN_ID", "")
@@ -67,9 +66,43 @@ def _braze_schedule(headline, body, url, schedule_time, at_optimal_time=False, i
     if not campaign_id:
         raise ValueError("BRAZE_CAMPAIGN_ID not set")
 
-    schedule = {"time": schedule_time}
-    if at_optimal_time:
-        schedule["at_optimal_time"] = True
+    payload = {
+        "campaign_id": campaign_id,
+        "recipients": [{
+            "user_alias": {"alias_name": recipient_email, "alias_label": "email"},
+            "send_to_existing_only": False,
+            "attributes": {"email": recipient_email},
+        }],
+        "trigger_properties": {
+            "headline": headline,
+            "subject": f"[TEST] Breaking news: {headline}",
+            "body": body,
+            "url": url,
+            "image_url": image_url or "",
+        },
+    }
+
+    resp = http.post(
+        f"{endpoint}/campaigns/trigger/send",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json=payload,
+        timeout=15,
+    )
+    if not resp.ok:
+        print("Braze error:", resp.status_code, resp.text)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _braze_schedule(headline, body, url, schedule_time, image_url=None):
+    api_key = os.environ.get("BRAZE_API_KEY", "")
+    endpoint = os.environ.get("BRAZE_REST_ENDPOINT", "https://rest.fra-01.braze.eu")
+    campaign_id = os.environ.get("BRAZE_CAMPAIGN_ID", "")
+
+    if not api_key:
+        raise ValueError("BRAZE_API_KEY not set")
+    if not campaign_id:
+        raise ValueError("BRAZE_CAMPAIGN_ID not set")
 
     payload = {
         "campaign_id": campaign_id,
@@ -81,7 +114,7 @@ def _braze_schedule(headline, body, url, schedule_time, at_optimal_time=False, i
             "url": url,
             "image_url": image_url or "",
         },
-        "schedule": schedule,
+        "schedule": {"time": schedule_time},
     }
 
     resp = http.post(
@@ -177,6 +210,46 @@ def index():
     return render_template("index.html", csrf_token=session["csrf_token"])
 
 
+@app.route("/api/test-send", methods=["POST"])
+def test_send():
+    err = _require_csrf()
+    if err:
+        return err
+
+    data = request.json or {}
+    headline = data.get("headline", "")
+    body = data.get("body", "")
+    url = data.get("url", "")
+    image_url = data.get("image_url", "")
+    recipient = (data.get("recipient") or "").strip()
+    channels = data.get("channels") or []
+
+    if not headline:
+        return jsonify({"success": False, "error": "Subject line is required"}), 400
+    if not channels:
+        return jsonify({"success": False, "error": "Select at least one channel"}), 400
+
+    results = {}
+
+    if "email" in channels:
+        if not recipient or "@" not in recipient:
+            return jsonify({"success": False, "error": "A valid test email address is required"}), 400
+        if not os.environ.get("BRAZE_API_KEY"):
+            results["email"] = "simulated"
+        else:
+            try:
+                _braze_test_send(headline, body, url, recipient, image_url=image_url)
+                results["email"] = "sent"
+            except Exception as exc:
+                return jsonify({"success": False, "error": str(exc)}), 500
+
+    if "app" in channels:
+        # App alerts are not wired to delivery yet — test sends are simulated.
+        results["app"] = "simulated"
+
+    return jsonify({"success": True, "results": results})
+
+
 @app.route("/api/send", methods=["POST"])
 def send_alert():
     err = _require_csrf()
@@ -201,9 +274,6 @@ def send_alert():
             if not sched_at:
                 return jsonify({"success": False, "error": "Schedule time is required"}), 400
             _braze_schedule(headline, body, url, sched_at, image_url=image_url)
-        elif timing == "intelligent":
-            today = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-            _braze_schedule(headline, body, url, today, at_optimal_time=True, image_url=image_url)
         else:
             return jsonify({"success": False, "error": "Unknown timing mode"}), 400
     except Exception as exc:

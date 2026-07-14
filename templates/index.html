@@ -86,20 +86,6 @@
     .char-count.warn{color:#d98a00;}
     .char-count.over{color:var(--navy);}
 
-    /* link tree */
-    #link-tree{display:none;margin-top:2px;}
-    #link-tree.show{display:flex;animation:dspFade .25s ease;}
-    .tree-rail{width:30px;flex-shrink:0;position:relative;}
-    .tree-rail::before{content:'';position:absolute;left:14px;top:0;bottom:26px;width:1px;background:#bcbcbc;}
-    .tree-rail::after{content:'';position:absolute;left:14px;top:calc(50% + 4px);width:14px;height:1px;background:#bcbcbc;}
-    .tree-box{flex:1;border:1px solid #d8d8d8;border-radius:2px;overflow:hidden;margin-top:8px;}
-    .tree-row{display:flex;align-items:center;background:#fbfbfb;}
-    .tree-row:first-child{border-bottom:1px solid #ececec;}
-    .tree-icon{width:46px;height:46px;background:#efefef;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-right:1px solid #e4e4e4;}
-    .tree-key{width:96px;flex-shrink:0;font-size:13px;font-weight:700;color:#333;padding:0 12px;}
-    .tree-val{flex:1;font-size:14px;color:#707070;padding:0 12px;font-family:var(--serif);}
-    .tree-val.url{font-size:13px;color:var(--blue);font-family:'SF Mono',Menlo,monospace;word-break:break-all;}
-
     /* helper bar */
     .helper-bar{display:flex;align-items:center;gap:14px;margin-top:14px;background:#dcdcdc;border-radius:2px;padding:9px 12px;}
     .helper-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#333;}
@@ -112,8 +98,6 @@
     .copy-btn{background:#d6d6d6;color:#3a3a3a;border:none;border-radius:2px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
     .copy-btn:hover{background:#cccccc;}
 
-    .dev-badge{font-size:10.5px;font-weight:700;letter-spacing:.4px;background:#fde7c8;color:#8a5a00;border:1px solid #f3d690;padding:2px 8px;border-radius:2px;text-transform:uppercase;}
-
     /* segments */
     .seg-group{display:flex;flex-wrap:wrap;gap:9px;}
     .seg-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:2px;border:1px solid #c9c9c9;background:#fff;color:#333;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s;}
@@ -121,11 +105,20 @@
     .seg-btn.selected{border-color:var(--navy);background:var(--navy);color:#fff;font-weight:600;}
     .seg-code{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:2px;background:#ececec;color:#707070;}
     .seg-btn.selected .seg-code{background:rgba(255,255,255,.2);color:#fff;}
-    .seg-warn{display:flex;gap:10px;margin-top:14px;padding:11px 14px;background:#fdf3d6;border:1px solid #f3d690;border-left:3px solid #e0a200;border-radius:2px;font-size:12.5px;color:#7a5400;line-height:1.55;}
-    .seg-warn svg{flex-shrink:0;margin-top:1px;}
+
+    /* channels */
+    .chan-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+    .chan-btn{position:relative;padding:14px 15px;border-radius:2px;text-align:left;cursor:pointer;font-family:inherit;border:1px solid #c9c9c9;border-top:3px solid #cfcfcf;background:#fff;transition:all .12s;}
+    .chan-btn:hover{border-color:var(--navy);}
+    .chan-btn.selected{border-color:var(--navy);border-top-color:var(--navy);background:#eef2fb;}
+    .chan-btn.selected .timing-label{color:var(--navy);}
+    .chan-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;border:1.5px solid #c9c9c9;background:#fff;display:flex;align-items:center;justify-content:center;}
+    .chan-btn.selected .chan-check{background:var(--navy);border-color:var(--navy);}
+    .chan-check svg{display:none;}
+    .chan-btn.selected .chan-check svg{display:block;}
 
     /* timing */
-    .timing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+    .timing-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
     .timing-btn{padding:14px 15px;border-radius:2px;text-align:left;cursor:pointer;font-family:inherit;border:1px solid #c9c9c9;border-top:3px solid #cfcfcf;background:#fff;}
     .timing-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
     .timing-label{font-size:13.5px;font-weight:700;color:#333;}
@@ -134,8 +127,6 @@
     .timing-btn.sel-immediate .timing-label{color:var(--navy);}
     .timing-btn.sel-scheduled{border-color:var(--orange);border-top-color:var(--orange);background:#fff5ee;}
     .timing-btn.sel-scheduled .timing-label{color:var(--orange);}
-    .timing-btn.sel-intelligent{border-color:var(--blue);border-top-color:var(--blue);background:#eef4fc;}
-    .timing-btn.sel-intelligent .timing-label{color:var(--blue);}
 
     #scheduled-panel{display:none;gap:14px;margin-top:14px;padding:14px 16px;background:#fff5ee;border:1px solid #f4cdb0;border-radius:2px;}
     #scheduled-panel.show{display:flex;animation:dspFade .2s ease;}
@@ -143,13 +134,18 @@
     .sched-label{font-size:12px;font-weight:700;color:#a8521f;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
     #scheduled-panel .input{border-color:#e0b48f;padding:10px 12px;font-size:14px;}
 
-    #intelligent-panel{display:none;gap:13px;margin-top:14px;padding:15px 17px;background:#eef4fc;border:1px solid #c3d7f2;border-radius:2px;}
-    #intelligent-panel.show{display:flex;animation:dspFade .2s ease;}
-    #intelligent-panel svg{flex-shrink:0;margin-top:1px;}
-    .it-title{font-size:13.5px;font-weight:700;color:#11407e;margin-bottom:5px;}
-    .it-body{font-size:12.5px;color:#555;line-height:1.6;}
-    .it-tags{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;}
-    .it-tag{background:#fff;border:1px solid #c3d7f2;border-radius:2px;padding:5px 10px;font-size:11.5px;color:#11407e;font-weight:600;}
+    /* test send */
+    .test-row{display:flex;gap:10px;}
+    .test-row .input{flex:1;}
+    #test-btn{flex-shrink:0;padding:0 22px;border:1px solid var(--navy);border-radius:2px;background:#fff;color:var(--navy);font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s;}
+    #test-btn:hover{background:var(--navy);color:#fff;}
+    #test-btn:disabled{border-color:#c9c9c9;color:#aaa;background:#f0f0f0;cursor:default;}
+    .test-hint{font-size:12px;color:#999;line-height:1.5;margin-top:9px;}
+    #test-status{font-size:13px;line-height:1.5;margin-top:9px;font-weight:600;display:none;}
+    #test-status.show{display:block;animation:dspFade .2s ease;}
+    #test-status.ok{color:var(--green);}
+    #test-status.warn{color:#a86b00;}
+    #test-status.err{color:var(--guardian-news-red);}
 
     /* ── RIGHT RAIL ── */
     #rail{width:344px;flex-shrink:0;background:#fff;border-left:1px solid #d3d3d3;overflow-y:auto;display:flex;flex-direction:column;padding:20px 18px;}
@@ -181,7 +177,25 @@
     .em-links{font-family:Arial,sans-serif;font-size:11px;color:#0077b6;line-height:1.5;margin-bottom:10px;}
     .em-legal{font-family:Arial,sans-serif;font-size:10px;color:#999;line-height:1.45;}
 
-    .route-row{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f6f6f6;border:1px solid #e2e2e2;border-radius:2px;margin-bottom:18px;}
+    /* app alert preview */
+    #app-preview-wrap{display:none;}
+    #app-preview-wrap.show{display:block;animation:dspFade .25s ease;}
+    .ap-phone{background:linear-gradient(160deg,#052962 0%,#1556b0 62%,#3f9edb 100%);border:1px solid #dadada;border-radius:14px;padding:16px 12px 20px;margin-bottom:20px;}
+    .ap-clock{text-align:center;color:#fff;font-weight:300;font-size:32px;letter-spacing:1px;line-height:1;margin:4px 0 3px;}
+    .ap-date{text-align:center;color:rgba(255,255,255,.85);font-size:11.5px;margin-bottom:15px;}
+    .ap-notif{background:rgba(250,250,250,.97);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 16px rgba(0,0,0,.28);}
+    .ap-icon{width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;font-family:var(--serif);font-weight:700;font-size:19px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .ap-content{flex:1;min-width:0;}
+    .ap-toprow{display:flex;justify-content:space-between;gap:8px;margin-bottom:2px;}
+    .ap-app{font-size:10.5px;font-weight:600;color:#666;letter-spacing:.4px;}
+    .ap-when{font-size:10.5px;color:#999;}
+    .ap-title{font-size:12.5px;font-weight:700;color:#111;line-height:1.3;}
+    .ap-body{font-size:12px;color:#333;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .ap-thumb{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;display:none;}
+
+    .route-row{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f6f6f6;border:1px solid #e2e2e2;border-radius:2px;margin-bottom:8px;}
+    #route-rows{margin-bottom:10px;}
+    .route-empty{font-size:11px;color:#aaa;font-style:italic;margin-bottom:18px;}
     .route-channel{font-size:12.5px;font-weight:600;color:#333;}
     .route-detail{font-size:11px;color:#888;margin-top:1px;}
     .route-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:2px;background:#e6eefb;color:var(--blue);flex-shrink:0;}
@@ -254,22 +268,6 @@
           <div class="section-label">Article source</div>
           <input type="url" id="url" class="input" placeholder="https://www.theguardian.com/…" oninput="onUrlInput()">
 
-          <div id="link-tree">
-            <div class="tree-rail"></div>
-            <div class="tree-box">
-              <div class="tree-row">
-                <div class="tree-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5l5-5M8 12l-2.3 2.3a3.2 3.2 0 004.5 4.5L12.5 16M16 12l2.3-2.3a3.2 3.2 0 00-4.5-4.5L11.5 8" stroke="#707070" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-                <div class="tree-key">Link Text</div>
-                <div class="tree-val" id="tree-linktext"></div>
-              </div>
-              <div class="tree-row">
-                <div class="tree-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5l5-5M8 12l-2.3 2.3a3.2 3.2 0 004.5 4.5L12.5 16M16 12l2.3-2.3a3.2 3.2 0 00-4.5-4.5L11.5 8" stroke="#707070" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-                <div class="tree-key">URL</div>
-                <div class="tree-val url" id="tree-url"></div>
-              </div>
-            </div>
-          </div>
-
           <div class="helper-bar">
             <div class="helper-title">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-2.6-6.3M21 4v4h-4" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -299,17 +297,33 @@
           <div class="char-count" id="blen">0 / 280</div>
         </div>
 
+        <!-- Channels -->
+        <div class="section" id="sec-channels">
+          <div class="section-label">Channels</div>
+          <div class="chan-grid">
+            <button class="chan-btn selected" id="chan-email" onclick="toggleChannel('email')">
+              <div class="chan-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4.2l2.4 2.4L9 1" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="timing-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="timing-label">Newsletter email</span>
+              </div>
+              <div class="timing-desc">Sends via the Braze breaking-news campaign</div>
+            </button>
+            <button class="chan-btn" id="chan-app" onclick="toggleChannel('app')">
+              <div class="chan-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4.2l2.4 2.4L9 1" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="timing-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="7" y="2" width="10" height="20" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 18.5h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <span class="timing-label">App alert</span>
+              </div>
+              <div class="timing-desc">Push notification to Guardian app users</div>
+            </button>
+          </div>
+        </div>
+
         <!-- Audience -->
         <div class="section" id="sec-audience">
-          <div class="label-row">
-            <div class="section-label">Audience segments</div>
-            <span class="dev-badge">Not in production</span>
-          </div>
+          <div class="section-label">Audience segments</div>
           <div class="seg-group" id="seg-group"></div>
-          <div class="seg-warn">
-            <svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 3l9 16H3z" fill="none" stroke="#c8920f" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5M12 16.6v.4" stroke="#c8920f" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <div><strong>Targeting not yet active.</strong> Segment selection is captured but not wired to delivery — every dispatch goes to the same Braze campaign regardless of which segments are chosen.</div>
-          </div>
         </div>
 
         <!-- Delivery & timing -->
@@ -330,13 +344,6 @@
               </div>
               <div class="timing-desc">Pick a date and time</div>
             </button>
-            <button class="timing-btn" id="timing-intelligent" onclick="selectTiming('intelligent')">
-              <div class="timing-head">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 00-3 11.2V17h6v-2.8A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 20h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-                <span class="timing-label">Intelligent</span>
-              </div>
-              <div class="timing-desc">Braze sends per-subscriber</div>
-            </button>
           </div>
 
           <div id="scheduled-panel">
@@ -350,18 +357,17 @@
             </div>
           </div>
 
-          <div id="intelligent-panel">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 00-3 11.2V17h6v-2.8A6 6 0 0012 3z" stroke="#1556b0" stroke-width="1.7"/><path d="M9.5 20h5M10 22h4" stroke="#1556b0" stroke-width="1.7" stroke-linecap="round"/></svg>
-            <div>
-              <div class="it-title">Braze Intelligent Timing</div>
-              <div class="it-body">Braze analyses each subscriber's historical engagement — open times, click-through, session activity — and delivers this dispatch in their individual optimal window rather than at a single fixed time.</div>
-              <div class="it-tags">
-                <span class="it-tag">Delivered within 24 hrs</span>
-                <span class="it-tag">~+23% open-rate uplift</span>
-                <span class="it-tag">Per-subscriber send time</span>
-              </div>
-            </div>
+        </div>
+
+        <!-- Test send -->
+        <div class="section" id="sec-test">
+          <div class="section-label">Test send</div>
+          <div class="test-row">
+            <input type="email" id="test-recipient" class="input" placeholder="name@theguardian.com">
+            <button id="test-btn" onclick="sendTest()">Send test</button>
           </div>
+          <div class="test-hint">Sends this dispatch only to the email address above, on the enabled channels — audience segments and timing are ignored.</div>
+          <div id="test-status"></div>
         </div>
 
       </div>
@@ -376,6 +382,7 @@
         <button class="success-dismiss" onclick="dismissSuccess()">×</button>
       </div>
 
+      <div id="email-preview-wrap">
       <div class="rail-label">Email preview</div>
       <div class="email-preview">
         <div class="em-viewbrowser">View in browser</div>
@@ -400,15 +407,27 @@
           <div class="em-legal">You are receiving this email because you opted to receive messages from Guardian News &amp; Media Limited. Registered Office: Kings Place, 90 York Way, London, N1 9GU.</div>
         </div>
       </div>
+      </div>
+
+      <div id="app-preview-wrap">
+        <div class="rail-label">App alert preview</div>
+        <div class="ap-phone">
+          <div class="ap-clock" id="ap-clock">09:41</div>
+          <div class="ap-date" id="ap-date">Monday 22 June</div>
+          <div class="ap-notif">
+            <div class="ap-icon">G</div>
+            <div class="ap-content">
+              <div class="ap-toprow"><span class="ap-app">THE GUARDIAN</span><span class="ap-when">now</span></div>
+              <div class="ap-title" id="ap-headline">Your subject line will appear here</div>
+              <div class="ap-body" id="ap-body">Your preview text appears here as the alert body.</div>
+            </div>
+            <img class="ap-thumb" id="ap-thumb" alt="">
+          </div>
+        </div>
+      </div>
 
       <div class="rail-label">Routing</div>
-      <div class="route-row">
-        <div>
-          <div class="route-channel">Newsletter · Email</div>
-          <div class="route-detail" id="routing-detail">Immediate send via Braze</div>
-        </div>
-        <span class="route-badge">Braze</span>
-      </div>
+      <div id="route-rows"></div>
 
       <div class="rail-label">Sending to</div>
       <div class="seg-pills" id="seg-pills"><span class="seg-pill-empty">No segments selected</span></div>
@@ -428,12 +447,12 @@
     { id:'uk', label:'United Kingdom', code:'UK' },
     { id:'us', label:'United States',  code:'US' },
     { id:'au', label:'Australia',      code:'AU' },
-    { id:'eu', label:'Europe',         code:'EU' },
     { id:'global', label:'Global',     code:'ALL' },
   ];
 
   const state = {
     segments:{},
+    channels:{ email:true, app:false },
     timing:'immediate',
     imageUrl:'',
     sent:false,
@@ -442,7 +461,6 @@
   const TIMING_DETAIL = {
     immediate:'Immediate send via Braze',
     scheduled:'Scheduled send via Braze',
-    intelligent:'Intelligent Timing · per-subscriber window',
   };
 
   // ── INIT ──
@@ -456,8 +474,12 @@
       b.onclick = ()=>toggleSegment(seg.id);
       g.appendChild(b);
     });
-    document.getElementById('em-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    const now = new Date();
+    document.getElementById('em-date').textContent = now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('ap-clock').textContent = now.toTimeString().slice(0,5);
+    document.getElementById('ap-date').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
     updateEmailImage();
+    updateChannelUI();
     touchSaved();
     updateSendButton();
   }
@@ -512,7 +534,6 @@
       }
       state.imageUrl = data.image_url || '';
       updateEmailImage();
-      showLinkTree(data.headline || '', url);
       updatePreview();
       updateSendButton();
       status.textContent = '✓ Subject and preview text populated from article';
@@ -524,12 +545,42 @@
     });
   }
 
-  function showLinkTree(linkText, url){
-    let slug = url;
-    try { slug = new URL(url).pathname.replace(/^\//,''); } catch(_) {}
-    document.getElementById('tree-linktext').textContent = linkText || slug;
-    document.getElementById('tree-url').textContent = slug;
-    document.getElementById('link-tree').classList.add('show');
+  // ── CHANNELS ──
+  function toggleChannel(id){
+    state.channels[id] = !state.channels[id];
+    document.getElementById('chan-'+id).classList.toggle('selected', state.channels[id]);
+    updateChannelUI();
+    updateSendButton();
+    touchSaved();
+  }
+
+  function updateChannelUI(){
+    document.getElementById('email-preview-wrap').style.display = state.channels.email ? '' : 'none';
+    document.getElementById('app-preview-wrap').classList.toggle('show', state.channels.app);
+    renderRouting();
+  }
+
+  function renderRouting(){
+    const rows = [];
+    if(state.channels.email){
+      rows.push(
+        '<div class="route-row"><div>' +
+        '<div class="route-channel">Newsletter · Email</div>' +
+        '<div class="route-detail">'+TIMING_DETAIL[state.timing]+'</div>' +
+        '</div><span class="route-badge">Braze</span></div>'
+      );
+    }
+    if(state.channels.app){
+      rows.push(
+        '<div class="route-row"><div>' +
+        '<div class="route-channel">App alert · Push</div>' +
+        '<div class="route-detail">Push notification to Guardian app users</div>' +
+        '</div></div>'
+      );
+    }
+    document.getElementById('route-rows').innerHTML = rows.length
+      ? rows.join('')
+      : '<div class="route-empty">No channels selected</div>';
   }
 
   // ── SEGMENTS ──
@@ -550,12 +601,11 @@
   // ── TIMING ──
   function selectTiming(t){
     state.timing = t;
-    ['immediate','scheduled','intelligent'].forEach(id=>{
+    ['immediate','scheduled'].forEach(id=>{
       document.getElementById('timing-'+id).className = 'timing-btn' + (id===t ? ' sel-'+id : '');
     });
     document.getElementById('scheduled-panel').classList.toggle('show', t==='scheduled');
-    document.getElementById('intelligent-panel').classList.toggle('show', t==='intelligent');
-    document.getElementById('routing-detail').textContent = TIMING_DETAIL[t];
+    renderRouting();
     updateSendButton();
     touchSaved();
   }
@@ -572,6 +622,8 @@
     const body = document.getElementById('body-text').value;
     document.getElementById('prev-headline').textContent = hl || 'Your subject line will appear here';
     document.getElementById('prev-body').textContent = body || 'Your preview text appears here as the email standfirst.';
+    document.getElementById('ap-headline').textContent = hl || 'Your subject line will appear here';
+    document.getElementById('ap-body').textContent = body || 'Your preview text appears here as the alert body.';
   }
 
   function updateEmailImage(){
@@ -579,6 +631,9 @@
     const ph = document.getElementById('em-image-ph');
     if(state.imageUrl){ img.src = state.imageUrl; img.style.display='block'; ph.style.display='none'; }
     else { img.style.display='none'; ph.style.display='flex'; }
+    const thumb = document.getElementById('ap-thumb');
+    if(state.imageUrl){ thumb.src = state.imageUrl; thumb.style.display='block'; }
+    else { thumb.style.display='none'; }
   }
 
   // ── CHAR COUNT ──
@@ -598,7 +653,7 @@
     const schedOk = state.timing !== 'scheduled' || (
       document.getElementById('sched-date').value && document.getElementById('sched-time').value
     );
-    const ready = hl.length > 0 && schedOk;
+    const ready = hl.length > 0 && schedOk && state.channels.email;
 
     if(state.sent){
       btn.className='sent'; btn.disabled=true; btn.textContent='✓ Dispatched';
@@ -612,13 +667,14 @@
     pill.textContent = ready ? 'Ready to send' : 'Not ready';
 
     if(ready){
-      btn.textContent = state.timing==='scheduled' ? 'Schedule dispatch'
-        : state.timing==='intelligent' ? 'Send via Intelligent Timing'
-        : 'Send dispatch';
+      btn.textContent = state.timing==='scheduled' ? 'Schedule dispatch' : 'Send dispatch';
       hint.textContent = '';
     } else {
       btn.textContent = 'Send dispatch';
-      hint.textContent = !hl ? 'Add a subject line to continue' : 'Set a date and time';
+      hint.textContent = !hl ? 'Add a subject line to continue'
+        : !schedOk ? 'Set a date and time'
+        : state.channels.app ? 'App alerts are preview-only — enable email to send'
+        : 'Select the email channel to send';
     }
   }
 
@@ -644,6 +700,7 @@
       headers:{ 'Content-Type':'application/json', 'X-CSRF-Token':CSRF },
       body: JSON.stringify({
         headline:hl, body, url, image_url:state.imageUrl, segments,
+        channels:Object.keys(state.channels).filter(c=>state.channels[c]),
         timing:state.timing, sched_at:schedAt,
       })
     })
@@ -655,13 +712,52 @@
       const titles = {
         immediate:'Breaking-news dispatch sent',
         scheduled:'Dispatch scheduled for '+schedDate+' '+schedTime+' (local)',
-        intelligent:'Dispatch queued for intelligent delivery',
       };
       document.getElementById('success-title').textContent = titles[state.timing] || titles.immediate;
       document.getElementById('success-banner').classList.add('show');
       setTimeout(()=>{ state.sent=false; updateSendButton(); }, 3000);
     })
     .catch(()=>{ alert('Send failed: network error'); updateSendButton(); });
+  }
+
+  // ── TEST SEND ──
+  function setTestStatus(msg, cls){
+    const el = document.getElementById('test-status');
+    el.textContent = msg;
+    el.className = msg ? 'show' + (cls ? ' '+cls : '') : '';
+  }
+
+  function sendTest(){
+    const btn = document.getElementById('test-btn');
+    const hl = document.getElementById('subject').value.trim();
+    const body = document.getElementById('body-text').value.trim();
+    const url = document.getElementById('url').value.trim();
+    const recipient = document.getElementById('test-recipient').value.trim();
+    const channels = Object.keys(state.channels).filter(c=>state.channels[c]);
+
+    if(!hl){ setTestStatus('Add a subject line first', 'warn'); return; }
+    if(channels.length === 0){ setTestStatus('Select at least one channel', 'warn'); return; }
+    if(channels.includes('email') && !/^\S+@\S+\.\S+$/.test(recipient)){ setTestStatus('Enter a valid test email address', 'warn'); return; }
+
+    btn.disabled = true;
+    setTestStatus('Sending test…');
+
+    fetch('/api/test-send', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-CSRF-Token':CSRF },
+      body: JSON.stringify({ headline:hl, body, url, image_url:state.imageUrl, channels, recipient }),
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      btn.disabled = false;
+      if(!data.success){ setTestStatus('Test failed: '+(data.error||'Unknown error'), 'err'); return; }
+      const parts = [];
+      if(data.results.email === 'sent') parts.push('✓ Test email sent to '+recipient);
+      if(data.results.email === 'simulated') parts.push('✓ Test email simulated (no Braze key set)');
+      if(data.results.app) parts.push('✓ App alert test simulated');
+      setTestStatus(parts.join('  ·  '), 'ok');
+    })
+    .catch(()=>{ btn.disabled = false; setTestStatus('Test failed: network error', 'err'); });
   }
 
   function dismissSuccess(){
