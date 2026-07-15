@@ -98,9 +98,6 @@
     .fetch-btn{display:inline-flex;align-items:center;gap:8px;background:#333;color:#fff;border:none;border-radius:2px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
     .fetch-btn:hover{background:#1a1a1a;}
 
-    .copy-btn{background:#d6d6d6;color:#3a3a3a;border:none;border-radius:2px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
-    .copy-btn:hover{background:#cccccc;}
-
     /* segments */
     .seg-group{display:flex;flex-wrap:wrap;gap:9px;}
     .seg-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:2px;border:1px solid #c9c9c9;background:#fff;color:#333;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s;}
@@ -267,43 +264,6 @@
     <div id="form-panel" class="dsp-scroll">
       <div class="form-inner">
 
-        <!-- Article source -->
-        <div class="section" id="sec-content">
-          <div class="section-label">Article source</div>
-          <input type="url" id="url" class="input" placeholder="https://www.theguardian.com/…" oninput="onUrlInput()">
-
-          <div class="helper-bar">
-            <div class="helper-title">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-2.6-6.3M21 4v4h-4" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Article import
-            </div>
-            <div class="helper-status" id="fetch-status">Paste a Guardian URL, then fetch</div>
-            <button class="fetch-btn" onclick="fetchArticle()">
-              Fetch <svg width="15" height="11" viewBox="0 0 15 11"><path d="M0 5.5h12M9 1.5l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Subject line -->
-        <div class="section">
-          <div class="label-row">
-            <div class="section-label">Subject line</div>
-            <select id="kicker" class="kicker-select" onchange="updatePreview();touchSaved();"></select>
-          </div>
-          <textarea id="subject" class="input input-serif" rows="2" maxlength="100" placeholder="Enter the breaking-news subject line…" oninput="updateCharCount('subject','hlen',100);updatePreview();updateSendButton();touchSaved();"></textarea>
-          <div class="char-count" id="hlen">0 / 100</div>
-        </div>
-
-        <!-- Preview text -->
-        <div class="section">
-          <div class="label-row">
-            <div class="section-label">Preview text</div>
-            <button class="copy-btn" onclick="copyFromSubject()">Copy from subject</button>
-          </div>
-          <textarea id="body-text" class="input input-serif" rows="3" maxlength="280" placeholder="Appears as the email preview text and opening body copy…" oninput="updateCharCount('body-text','blen',280);updatePreview();touchSaved();"></textarea>
-          <div class="char-count" id="blen">0 / 280</div>
-        </div>
-
         <!-- Channels -->
         <div class="section" id="sec-channels">
           <div class="section-label">Channels</div>
@@ -325,6 +285,41 @@
               <div class="timing-desc">Push notification to Guardian app users</div>
             </button>
           </div>
+        </div>
+
+        <!-- Article source -->
+        <div class="section" id="sec-content">
+          <div class="section-label">Article source</div>
+          <input type="url" id="url" class="input" placeholder="https://www.theguardian.com/…" oninput="onUrlInput()">
+
+          <div class="helper-bar">
+            <div class="helper-title">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-2.6-6.3M21 4v4h-4" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Article import
+            </div>
+            <div class="helper-status" id="fetch-status">Paste a Guardian URL, then fetch</div>
+            <button class="fetch-btn" onclick="fetchArticle()">
+              Fetch <svg width="15" height="11" viewBox="0 0 15 11"><path d="M0 5.5h12M9 1.5l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject line -->
+        <div class="section">
+          <div class="label-row">
+            <div class="section-label" id="subject-label">Kicker</div>
+            <select id="kicker" class="kicker-select" onchange="updatePreview();touchSaved();"></select>
+            <select id="alert-type" class="kicker-select" onchange="updatePreview();touchSaved();" style="display:none;"></select>
+          </div>
+          <textarea id="subject" class="input input-serif" rows="2" maxlength="100" placeholder="Enter the breaking-news subject line…" oninput="updateCharCount('subject','hlen',100);updatePreview();updateSendButton();touchSaved();"></textarea>
+          <div class="char-count" id="hlen">0 / 100</div>
+        </div>
+
+        <!-- Preview text -->
+        <div class="section">
+          <div class="section-label">Preview text</div>
+          <textarea id="body-text" class="input input-serif" rows="3" maxlength="280" placeholder="Appears as the email preview text and opening body copy…" oninput="updateCharCount('body-text','blen',280);updatePreview();touchSaved();"></textarea>
+          <div class="char-count" id="blen">0 / 280</div>
         </div>
 
         <!-- Audience -->
@@ -451,13 +446,25 @@
   const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
   const KICKERS = ['Breaking News', 'Exclusive'];
+  const ALERT_TYPES = ['Breaking News', 'Sports News', 'One Not to Miss', "Editors' Picks"];
 
   const SEGMENTS = [
     { id:'uk', label:'United Kingdom', code:'UK' },
     { id:'us', label:'United States',  code:'US' },
     { id:'au', label:'Australia',      code:'AU' },
-    { id:'global', label:'Global',     code:'ALL' },
+    { id:'eu', label:'Europe',         code:'EU', channels:['app'] },
+    { id:'intl', label:'International', code:'INT', channels:['app'] },
+    { id:'global', label:'Global',     code:'ALL', hiddenChannels:['email'] },
   ];
+
+  // A segment is hidden if any of its `hiddenChannels` is active; otherwise, if
+  // it has a `channels` allow-list, it shows only when one of those is active.
+  // Segments with neither restriction are always available.
+  function segmentAvailable(seg){
+    if(seg.hiddenChannels && seg.hiddenChannels.some(c=>state.channels[c])) return false;
+    if(seg.channels) return seg.channels.some(c=>state.channels[c]);
+    return true;
+  }
 
   const state = {
     segments:{},
@@ -481,16 +488,15 @@
       o.textContent = k;
       ks.appendChild(o);
     });
-
-    const g = document.getElementById('seg-group');
-    SEGMENTS.forEach(seg=>{
-      const b = document.createElement('button');
-      b.className = 'seg-btn';
-      b.id = 'seg-'+seg.id;
-      b.innerHTML = '<span class="seg-code">'+seg.code+'</span><span>'+seg.label+'</span>';
-      b.onclick = ()=>toggleSegment(seg.id);
-      g.appendChild(b);
+    const at = document.getElementById('alert-type');
+    ALERT_TYPES.forEach(t=>{
+      const o = document.createElement('option');
+      o.value = t;
+      o.textContent = t;
+      at.appendChild(o);
     });
+
+    renderSegments();
     const now = new Date();
     document.getElementById('em-date').textContent = now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
     document.getElementById('ap-clock').textContent = now.toTimeString().slice(0,5);
@@ -563,9 +569,13 @@
   }
 
   // ── CHANNELS ──
+  // Channels are mutually exclusive — exactly one is always selected.
   function toggleChannel(id){
-    state.channels[id] = !state.channels[id];
-    document.getElementById('chan-'+id).classList.toggle('selected', state.channels[id]);
+    if(state.channels[id]) return;  // already selected — nothing to do
+    Object.keys(state.channels).forEach(c=>{
+      state.channels[c] = (c === id);
+      document.getElementById('chan-'+c).classList.toggle('selected', state.channels[c]);
+    });
     updateChannelUI();
     updateSendButton();
     touchSaved();
@@ -574,7 +584,22 @@
   function updateChannelUI(){
     document.getElementById('email-preview-wrap').style.display = state.channels.email ? '' : 'none';
     document.getElementById('app-preview-wrap').classList.toggle('show', state.channels.app);
+
+    // Email UX: delivery & timing is not offered (email always sends immediately).
+    const hideDelivery = state.channels.email;
+    document.getElementById('sec-delivery').style.display = hideDelivery ? 'none' : '';
+    document.querySelector('.tab[data-tab="delivery"]').style.display = hideDelivery ? 'none' : '';
+    if(hideDelivery && state.timing !== 'immediate') selectTiming('immediate');
+
+    // App UX: the email kicker is replaced by an alert-type selector.
+    const isApp = state.channels.app;
+    document.getElementById('kicker').style.display = isApp ? 'none' : '';
+    document.getElementById('alert-type').style.display = isApp ? '' : 'none';
+    document.getElementById('subject-label').textContent = isApp ? 'Alert type' : 'Kicker';
+
+    renderSegments();
     renderRouting();
+    updatePreview();
   }
 
   function renderRouting(){
@@ -601,6 +626,24 @@
   }
 
   // ── SEGMENTS ──
+  function renderSegments(){
+    const g = document.getElementById('seg-group');
+    g.innerHTML = '';
+    SEGMENTS.forEach(seg=>{
+      if(!segmentAvailable(seg)){
+        // Clear any selection for a segment that's no longer offered.
+        if(state.segments[seg.id]) state.segments[seg.id] = false;
+        return;
+      }
+      const b = document.createElement('button');
+      b.className = 'seg-btn' + (state.segments[seg.id] ? ' selected' : '');
+      b.id = 'seg-'+seg.id;
+      b.innerHTML = '<span class="seg-code">'+seg.code+'</span><span>'+seg.label+'</span>';
+      b.onclick = ()=>toggleSegment(seg.id);
+      g.appendChild(b);
+    });
+    updateSegmentPills();
+  }
   function toggleSegment(id){
     state.segments[id] = !state.segments[id];
     document.getElementById('seg-'+id).classList.toggle('selected', state.segments[id]);
@@ -608,7 +651,7 @@
     touchSaved();
   }
   function updateSegmentPills(){
-    const sel = SEGMENTS.filter(s=>state.segments[s.id]);
+    const sel = SEGMENTS.filter(s=>state.segments[s.id] && segmentAvailable(s));
     const c = document.getElementById('seg-pills');
     c.innerHTML = sel.length === 0
       ? '<span class="seg-pill-empty">No segments selected</span>'
@@ -628,20 +671,15 @@
   }
 
   // ── PREVIEW ──
-  function copyFromSubject(){
-    document.getElementById('body-text').value = document.getElementById('subject').value;
-    updateCharCount('body-text','blen',280);
-    updatePreview();
-    touchSaved();
-  }
   function updatePreview(){
     const hl = document.getElementById('subject').value;
     const body = document.getElementById('body-text').value;
     const kicker = document.getElementById('kicker').value;
+    const alertType = document.getElementById('alert-type').value;
     document.getElementById('prev-kicker').textContent = kicker + ' / ';
     document.getElementById('prev-headline').textContent = hl || 'Your subject line will appear here';
     document.getElementById('prev-body').textContent = body || 'Your preview text appears here as the email standfirst.';
-    document.getElementById('ap-headline').textContent = kicker + ': ' + (hl || 'Your subject line will appear here');
+    document.getElementById('ap-headline').textContent = alertType + ': ' + (hl || 'Your subject line will appear here');
     document.getElementById('ap-body').textContent = body || 'Your preview text appears here as the alert body.';
   }
 
